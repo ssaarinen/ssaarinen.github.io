@@ -2,3 +2,7 @@ h1 {
     color: darkorange !important;
     float: right;
 }
+
+.clear-bg {
+    background-color: rgba(0, 0, 0, 0.5)
+}
