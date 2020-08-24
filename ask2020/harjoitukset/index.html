@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<title>Suunnistuskoulu 2019 / karttamerkit</title>
+
+	<link rel="stylesheet" href="css/reset.css">
+	<link rel="stylesheet" href="css/reveal.css">
+	<link rel="stylesheet" href="css/theme/black.css">
+
+	<!-- Theme used for syntax highlighting of code -->
+	<link rel="stylesheet" href="lib/css/monokai.css">
+
+	<!-- Printing and PDF exports -->
+	<script>
+		var link = document.createElement('link');
+		link.rel = 'stylesheet';
+		link.type = 'text/css';
+		link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+		document.getElementsByTagName('head')[0].appendChild(link);
+	</script>
+
+</head>
+
+<body>
+	<div class="reveal">
+		<div class="slides">
+
+			<section>
+				<h4><a href="karttamerkit.html">Karttamerkit</a></h4>
+				<small><a href="karttamerkit.pdf">vastaus.pdf</a></small>
+				<!--
+				<h4><a href="maaritteet.html">Rastimääritteet</a></h4>
+				<small><a href="maaritteet.pdf">vastaus.pdf (3kpl)</a></small>
+
+				<h4><a href="reitinvalinta.html">Reitinvalinta</a></h4>
+				<small><a href="reitinvalinta.pdf">vastaus.pdf</a></small>
+				-->
+			</section>
+
+			
+
+
+		</div>
+	</div>
+
+	<script src="js/reveal.js"></script>
+
+	<script>
+		// More info about config & dependencies:
+		// - https://github.com/hakimel/reveal.js#configuration
+		// - https://github.com/hakimel/reveal.js#dependencies
+		Reveal.initialize({
+			dependencies: [
+				{ src: 'plugin/markdown/marked.js' },
+				{ src: 'plugin/markdown/markdown.js' },
+				{ src: 'plugin/notes/notes.js', async: true },
+				{ src: 'plugin/highlight/highlight.js', async: true }
+			]
+		});
+		Reveal.configure({ navigationMode: 'grid' })
+	</script>
+</body>
+
+</html>
