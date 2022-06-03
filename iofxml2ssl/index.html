@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="description" content="IOF-xml to SSL (irma) conversion tool" />
+    <meta charset="utf-8" />
+    <title>IOF XML to SSL converter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Samuli Saarinen" />
+    <link rel="stylesheet" href="css/style.css" />
+    <!-- Google Fonts -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic"
+    />
+
+    <!-- CSS Reset -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css"
+    />
+
+    <!-- Milligram CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css"
+    />
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/abdmob/x2js@master/xml2json.js"></script>
+  </head>
+
+  <body>
+    <div class="container">
+        <h1>IOF XML to SSL converter</h1>
+    <p>
+      This tool is for converting IOF XML to SSL (Irma) format described
+      <a
+        href="https://www.suunnistusliitto.fi/kilpailu/kilpailujen-jarjestaminen/tulosten-toimittaminen/"
+        >here</a
+      >. Mainly intended for converting results from EResults Lite (by
+      <a href="http://www.oriento.fi">Oriento</a>) that does not support the
+      required result format natively.
+    </p>
+    <p>
+      Using this tool is free but user also remains responsible of the results
+      after the conversion. For errors and improvements please create an issue
+      at <a href="https://github.com/ssaarinen/ssaarinen.github.io">github</a>.
+      Or report by email at samuli (piste) saarinen (ät) rastinokia (piste) fi.
+      Attach a (minimal) xml that generates the error in the issue.
+    </p>
+    <p>
+      Here you can find a sample XMLs that were used in rigorious testing of
+      this tool: <a href="iof-sample.xml">sample 1</a>
+    </p>
+    
+      <button id="convertToSSLBtn">XML => SSL</button>
+      <div>
+        <h4>IOF XML:</h4>
+
+        <textarea id="xmlArea" style="width: 100%; height: 50vh"> </textarea>
+      </div>
+      <div>
+        <h4>SSL:</h4>
+        <p>
+          Copy / Paste the following results to a text file and change the
+          encoding from UTF-8 to ANSI and line endings to CR + LF if not using
+          Windows (e.g. Notepad++ can do these).
+        </p>
+
+        <pre id="sslArea" style="border: 1px dotted gray"></pre>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      const LICENSE_LENGTH = 6;
+      const NAME_LENGTH = 23;
+      const CLUB_LENGTH = 8;
+      const CLASS_LENGTH = 10;
+      const TIME_LENGTH = 6;
+
+      function forceArray(item) {
+        return Array.isArray(item) ? item : [item];
+      }
+
+      function handleClassResult(classResult, idx) {
+        const clazz = classResult?.Class?.Name ?? `?SARJA${idx}?`;
+        console.log("Handle CR", clazz);
+        return forceArray(classResult?.PersonResult ?? []).map((pr) =>
+          handlePersonResult(pr, clazz)
+        );
+      }
+
+      function handlePersonResult(pr, clazz) {
+        console.log(pr, clazz);
+        const license = formaLicense(pr?.Person?.Id ?? "", LICENSE_LENGTH);
+        const name = formatField(
+          `${pr?.Person?.Name?.Family ?? "?SUKUNIMI?"} ${
+            pr?.Person?.Name?.Given ?? "?ETUNIMI?"
+          }`,
+          NAME_LENGTH
+        );
+        const club = formatField(pr?.Organisation?.Name ?? "", CLUB_LENGTH);
+        const clazzField = formatField(clazz, CLASS_LENGTH);
+        const time = formatTime(
+          pr?.Result?.Time ?? "0",
+          pr?.Result?.Status ?? "??"
+        );
+        return `${license}${name}${club}${clazzField}${time}`;
+      }
+
+      function formaLicense(value, padLength) {
+        return value.substring(0, padLength).padStart(padLength, "0");
+      }
+
+      function formatField(value, padLength) {
+        return value.substring(0, padLength).padEnd(padLength, " ");
+      }
+
+      function formatTime(value, status) {
+        const timeSeconds = parseInt(value);
+        if (timeSeconds > 0 && status === "OK") {
+          const hours = Math.floor(timeSeconds / 3600);
+          const minutes = Math.floor(timeSeconds / 60) % 60;
+          const seconds = timeSeconds % 60;
+          return [hours, minutes, seconds]
+            .map((v) => (v < 10 ? "0" + v : v))
+            .join("");
+        } else if (status === "DidNotFinish") {
+          return "KES".padEnd(TIME_LENGTH, " ");
+        } else if (status === "Disqualified") {
+          return "HYL".padEnd(TIME_LENGTH, " ");
+        }
+        return "EIL".padEnd(TIME_LENGTH, " ");
+      }
+
+      function convertIOF2SSL(iofXml) {
+        const x2js = new X2JS();
+        const json = x2js.xml_str2json(iofXml);
+        console.log("Json", json);
+        const ssl = forceArray(json.ResultList.ClassResult ?? []).flatMap(
+          (cr, idx) => handleClassResult(cr, idx)
+        );
+        console.log("ssl", ssl);
+        return ssl.join("\n");
+      }
+
+      function handleConvertClick() {
+        try {
+          const xml = $("#xmlArea").val();
+          if (xml) {
+            const ssl = convertIOF2SSL(xml);
+            $("#sslArea").text(ssl);
+          } else {
+            alert("No XML data 😒");
+          }
+        } catch (error) {
+          console.log(error);
+          alert("Computer says no 😱🤯😡🤬");
+        }
+      }
+
+      $("#convertToSSLBtn").click(handleConvertClick);
+    </script>
+  </body>
+</html>
