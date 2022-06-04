@@ -26,7 +26,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css"
     />
-    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/abdmob/x2js@master/xml2json.js"></script>
   </head>
 
@@ -50,22 +50,28 @@
         <a href="https://github.com/ssaarinen/ssaarinen.github.io">github</a>.
         Or report by email at samuli (piste) saarinen (ät) rastinokia (piste)
         fi. Attach a (minimal) xml that generates the error in the issue.
+        Testing mostly done with Firefox and Chrome. See
+        <a href="changelog.html">changelog</a> for possible fixes.
       </p>
       <p>
         Here you can find the sample XMLs that were used in rigorious testing of
-        this tool: <a href="iof-sample.xml" target="_blank">sample 1</a>
+        this tool: <a href="iof-sample.xml" target="_blank">sample 1</a>.
       </p>
 
       <p>
-        NOTE: Result prosessing is done entirely in the browser so results are not
-        sent or stored anywhere.
+        NOTE: Result prosessing is done entirely in the browser so results are
+        not sent or stored anywhere.
       </p>
 
       <button id="convertToSSLBtn">XML => SSL</button>
       <div>
         <h4>IOF XML:</h4>
 
-        <textarea id="xmlArea" style="width: 100%; height: 50vh" placeholder="Copy/Paste the IOF XML here and press the button above for the results"></textarea>
+        <textarea
+          id="xmlArea"
+          style="width: 100%; height: 50vh"
+          placeholder="Copy/Paste the IOF XML here and press the button above for the results"
+        ></textarea>
       </div>
       <div>
         <h4>SSL:</h4>
