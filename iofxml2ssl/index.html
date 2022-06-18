@@ -26,6 +26,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css"
     />
+    <link rel="stylesheet" href="custom.css" />
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/abdmob/x2js@master/xml2json.js"></script>
   </head>
@@ -62,16 +63,68 @@
         NOTE: Result prosessing is done entirely in the browser so results are
         not sent or stored anywhere.
       </p>
+      <div class="wrap-collabsible">
+        <input id="collapsible" class="toggle" type="checkbox" />
+        <label for="collapsible" class="lbl-toggle"
+          >SSL (IRMA) license numbers not in IOF XML</label
+        >
+        <div class="collapsible-content">
+          <div class="content-inner">
+            <p>
+              If your IOF XML does not have IRMA license numbers included, add
+              the needed information here before generating results.
+            </p>
+            <p>
+              IRMA competitor database can be found here:
+              <a
+                target="_blank"
+                href="https://irma.suunnistusliitto.fi/irma/haku/valiranki?laji=S"
+                >IRMA-database</a
+              >.
+            </p>
+            <p>
+              Licenses cannot be read directly from IRMA by this application so open the above
+              link to a new tab and Copy/Paste the information to below field
+              and press Read licenses button. After that you can generate the IRMA
+              results and the license numbers will be added to the results
+              automatically based on competitor emit number if not available on IOF XML.
+            </p>
+            <p>
+              If you need to add or replace some information, add it to the end
+              of the input field using similar IRMA format:
+            </p>
+            <pre>
+  [license-number];[first name];[last name];[gender];[year of birth];[club];[something];[something];[emit-number]
+  e.g.
+  111307;;;;;;;;506336
+            </pre>
+            <p>
+              It will add or replace existing info that might be available
+              earlier on the input data.
+            </p>
+            <h4>IRMA competitor DB</h4>
 
-      <button id="convertToSSLBtn">XML => SSL</button>
+            <textarea
+              id="dbArea"
+              style="width: 100%; height: 30vh"
+              placeholder="Copy/Paste the IRMA competitor CSV here and press the button below"
+            ></textarea>
+            <button id="readCompetitorDB">Read Licenses</button>
+          </div>
+        </div>
+      </div>
+
       <div>
         <h4>IOF XML:</h4>
-
+        <p>
+          SSL (Irma) licenses read: <span id="competitorCount">0</span>
+        </p>
         <textarea
           id="xmlArea"
           style="width: 100%; height: 50vh"
-          placeholder="Copy/Paste the IOF XML here and press the button above for the results"
+          placeholder="Copy/Paste the IOF XML here and press the button below for the results"
         ></textarea>
+        <button id="convertToSSLBtn">XML => SSL</button>
       </div>
       <div>
         <h4>SSL:</h4>
@@ -84,13 +137,13 @@
         <pre id="sslArea" style="border: 1px dotted gray"></pre>
       </div>
     </div>
-
     <script type="text/javascript">
       const LICENSE_LENGTH = 6;
       const NAME_LENGTH = 23;
       const CLUB_LENGTH = 8;
       const CLASS_LENGTH = 10;
       const TIME_LENGTH = 6;
+      let IRMA_DB = {};
 
       function forceArray(item) {
         return Array.isArray(item) ? item : [item];
@@ -104,9 +157,17 @@
         );
       }
 
+      function irmaDBLookup(emit) {
+        console.log(`lookup emit: ${emit}`);
+        return IRMA_DB[emit] ?? "";
+      }
+
       function handlePersonResult(pr, clazz) {
         console.log(pr, clazz);
-        const license = formaLicense(pr?.Person?.Id ?? "", LICENSE_LENGTH);
+        const license = formatLicense(
+          pr?.Person?.Id ?? irmaDBLookup(pr?.Result?.ControlCard ?? ""),
+          LICENSE_LENGTH
+        );
         const name = formatField(
           `${pr?.Person?.Name?.Family ?? "?SUKUNIMI?"} ${
             pr?.Person?.Name?.Given ?? "?ETUNIMI?"
@@ -122,7 +183,7 @@
         return `${license}${name}${club}${clazzField}${time}`;
       }
 
-      function formaLicense(value, padLength) {
+      function formatLicense(value, padLength) {
         return value.substring(0, padLength).padStart(padLength, "0");
       }
 
@@ -158,6 +219,23 @@
         return ssl.join("\n");
       }
 
+      function competitorCsvArrayToObj(lineItem) {
+        const lic = lineItem[0];
+        const emit = lineItem[8];
+        return { [emit]: lic };
+      }
+
+      function processIrmaDBCsv(csv) {
+        const out = csv
+          .split(/\r?\n/)
+          .map((line) => line.split(";"))
+          .filter((item) => item.length === 9)
+          .map(competitorCsvArrayToObj)
+          .reduce((obj, item) => Object.assign(obj, item), {});
+        console.log(out);
+        return out;
+      }
+
       function handleConvertClick() {
         try {
           const xml = $("#xmlArea").val();
@@ -173,7 +251,18 @@
         }
       }
 
+      function handleReadDBClick() {
+        const db = $("#dbArea").val();
+        if (db) {
+          IRMA_DB = processIrmaDBCsv(db);
+          $("#competitorCount").text(Object.keys(IRMA_DB).length);
+        } else {
+          alert("No DB data 😒");
+        }
+      }
+
       $("#convertToSSLBtn").click(handleConvertClick);
+      $("#readCompetitorDB").click(handleReadDBClick);
     </script>
   </body>
 </html>
