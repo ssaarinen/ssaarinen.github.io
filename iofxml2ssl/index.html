@@ -75,31 +75,35 @@
               the needed information here before generating results.
             </p>
             <p>
-              IRMA competitor database can be found here:
-              <a
-                target="_blank"
-                href="https://irma.suunnistusliitto.fi/irma/haku/valiranki?laji=S"
-                >IRMA-database</a
-              >.
+              Export competitors from IRMA competition management page in Pirilä-format e.g.
             </p>
+            <pre>
+  = ILMOIT
+  H13,120648,Väliparta Simo,RR,526711,2009,FIN,1,12.00
+  D45,11838,Launela Saija,KangSK,341635,1960,FIN,1,18.00
+  H50,15290,Kortio Pasi,KangSK,251850,1970,FIN,1,18.00
+  D65,10657,Viinanen Marjo,Hiisi,251180,1957,FIN,1,18.00
+  H12TR,18063,Myllykorpi Matias,TP,222012,2011,FIN,1,12.00
+  H8RRS,129362,Räty Matti,RaN,0,2017,FIN,1,12.00
+  D21,95629,Orava Jenny,RasKa,506159,2003,FIN,1,18.00
+            </pre>
             <p>
-              Licenses cannot be read directly from IRMA by this application so open the above
-              link to a new tab and Copy/Paste the information to below field
+              Copy/Paste the information to below field
               and press Read licenses button. After that you can generate the IRMA
               results and the license numbers will be added to the results
               automatically based on competitor emit number if not available on IOF XML.
             </p>
             <p>
               If you need to add or replace some information, add it to the end
-              of the input field using similar IRMA format:
+              of the input field using similar Pirilä format or using simplified format (only license and emit-number):
             </p>
             <pre>
-  [license-number];[first name];[last name];[gender];[year of birth];[club];[something];[something];[emit-number]
+  [license],[emit-number]
   e.g.
-  111307;;;;;;;;506336
+  111307,506336
             </pre>
             <p>
-              It will add or replace existing info that might be available
+              This will add or replace existing info that might be available
               earlier on the input data.
             </p>
             <h4>IRMA competitor DB</h4>
@@ -124,7 +128,7 @@
           style="width: 100%; height: 50vh"
           placeholder="Copy/Paste the IOF XML here and press the button below for the results"
         ></textarea>
-        <button id="convertToSSLBtn">XML => SSL</button>
+        <button id="convertToSSLBtn">IOF XML => SSL</button>
       </div>
       <div>
         <h4>SSL:</h4>
@@ -220,16 +224,16 @@
       }
 
       function competitorCsvArrayToObj(lineItem) {
-        const lic = lineItem[0];
-        const emit = lineItem[8];
+        const lic = lineItem.length === 2 ? lineItem[0] : lineItem[1];
+        const emit = lineItem.length === 2 ? lineItem[1] : lineItem[4];
         return { [emit]: lic };
       }
 
       function processIrmaDBCsv(csv) {
         const out = csv
           .split(/\r?\n/)
-          .map((line) => line.split(";"))
-          .filter((item) => item.length === 9)
+          .map((line) => line.split(","))
+          .filter((item) => item.length === 9 || item.length === 2)
           .map(competitorCsvArrayToObj)
           .reduce((obj, item) => Object.assign(obj, item), {});
         console.log(out);
